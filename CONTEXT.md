@@ -9,7 +9,7 @@ Building a **client-side video processing web app** using Next.js + ffmpeg.wasm 
 
 **1. Project Setup**
 - Next.js 16.1.6 with Tailwind CSS v4 and shadcn/ui
-- Installed dependencies: `@ffmpeg/ffmpeg`, `@ffmpeg/util`, `framer-motion`, `lucide-react`
+- Installed dependencies: `@ffmpeg/ffmpeg@0.12.15`, `@ffmpeg/util@0.12.2`, `framer-motion`, `lucide-react`
 - shadcn components: button, card, input
 - Theme: Pastel Neo-Brutalist (soft colors + hard black borders/shadows)
 
@@ -36,19 +36,40 @@ All UI components are built and working:
 - Dark mode support with greyish theme
 - Responsive design patterns
 
-### 🔄 In Progress / Issues Fixed
-- Fixed CSS text clipping issues (buttons, badges, cards now have proper padding)
-- Fixed border thickness error (was 10px, now 2px)
-- Fixed button alignment (was `right`, now `center`)
-- All components rendering correctly on demo page
+**5. FFmpeg Integration** (NEW)
+- `hooks/use-ffmpeg.ts` - Custom React hook for FFmpeg WASM
+  - Lazy-loads ffmpeg.wasm core (~31MB) from CDN
+  - Two-pass palette-based GIF conversion for quality output
+  - Progress tracking via `progress` event
+  - Log output via `log` event
+  - Status state machine: `idle` -> `loading` -> `ready` -> `converting` -> `done`
+  - Virtual filesystem cleanup after conversion
+  - Error handling with user-friendly messages
+
+**6. Home Page - Video to GIF Converter** (NEW)
+- `app/page.tsx` - Fully functional video-to-GIF converter
+  - Step 1: Load FFmpeg button (downloads ~31MB WASM core)
+  - Step 2: Upload video (10MB limit, drag & drop or click)
+  - Step 3: Convert button with live progress bar
+  - Step 4: GIF preview with file size comparison
+  - Download button and "Convert Another" option
+  - Error handling with retry
+  - Responsive design using existing Pastel Neo-Brutalist styles
+
+**7. Metadata Updates** (NEW)
+- Updated `app/layout.tsx` with proper title and description
 
 ### 📁 Key Files Structure
 ```
 app/
 ├── globals.css              # Theme styles, CSS variables, component classes
+├── layout.tsx               # Root layout with updated metadata
 ├── demo/page.tsx            # Component showcase page
-├── layout.tsx               # Root layout
-├── page.tsx                 # Main landing page (basic)
+└── page.tsx                 # Home page: Video to GIF converter (fully functional)
+
+hooks/
+└── use-ffmpeg.ts            # Custom hook for FFmpeg WASM integration
+
 components/
 ├── video-processor/         # All video processing UI components
 │   ├── index.ts            # Exports
@@ -62,20 +83,15 @@ components/
 │   ├── download-section.tsx
 │   └── theme-toggle.tsx
 ├── ui/                      # shadcn components (button, card, input)
+└── aceternity/              # Additional UI components
 ```
 
 ## 🎯 Next Steps
 
-### Phase 1: FFmpeg Integration (CRITICAL - NOT STARTED)
-Need to implement actual video processing:
+### Phase 2: Advanced Video Processing Page (CRITICAL)
+Create `app/process/page.tsx` for more advanced video operations:
 
-1. **Create FFmpeg Hook** (`hooks/use-ffmpeg.ts`)
-   - Lazy load ffmpeg.wasm (31MB core)
-   - Progress tracking during load and processing
-   - Error handling and cleanup
-   - Support for both single-thread and multi-thread versions
-
-2. **Create Video Processing Service** (`lib/ffmpeg-commands.ts`)
+1. **Create Video Processing Service** (`lib/ffmpeg-commands.ts`)
    - Build FFmpeg command generator based on user options
    - Handle format conversion: `-i input.mp4 output.webm`
    - Handle resize: `-vf "scale=1920:1080"`
@@ -83,14 +99,13 @@ Need to implement actual video processing:
    - Handle trim: `-ss 00:00:10 -t 00:01:30`
    - Handle frame rate: `-r 30`
 
-### Phase 2: Main Processing Page
-Create `app/process/page.tsx` that:
-- Uses UploadZone for file selection
-- Shows VideoPreview after upload
-- Displays all option cards (Format, Quality, Trim)
-- Has ProcessButton that triggers FFmpeg
-- Shows progress during processing
-- Displays DownloadSection when complete
+2. **Main Processing Page** that:
+   - Uses UploadZone for file selection
+   - Shows VideoPreview after upload
+   - Displays all option cards (Format, Quality, Trim)
+   - Has ProcessButton that triggers FFmpeg
+   - Shows progress during processing
+   - Displays DownloadSection when complete
 
 ### Phase 3: Features to Add
 - **Merge videos** - Concatenate multiple clips
@@ -99,11 +114,11 @@ Create `app/process/page.tsx` that:
 - **Batch processing** - Process multiple files
 
 ### Phase 4: Polish
-- Add actual ffmpeg.wasm download (currently just UI)
 - Error boundaries for processing failures
-- Memory management (cleanup virtual filesystem)
+- Memory management optimization
 - Mobile optimization
 - Performance monitoring
+- Add multi-thread version with COOP/COEP headers for faster processing
 
 ## 🎨 Design System Reference
 
@@ -137,16 +152,18 @@ Create `app/process/page.tsx` that:
    ```
    Server runs on http://localhost:3000
 
-2. **View demo page:**
-   http://localhost:3000/demo
+2. **View the app:**
+   - Home page: http://localhost:3000 - Video to GIF converter (fully functional)
+   - Demo page: http://localhost:3000/demo - Component showcase
 
-3. **Install FFmpeg packages** (if not already):
-   ```bash
-   bun add @ffmpeg/ffmpeg @ffmpeg/util
-   ```
+3. **Test the converter:**
+   - Click "Load FFmpeg" (downloads ~31MB, only once)
+   - Upload a video (MP4, WebM, AVI, MOV, MKV) - max 10MB
+   - Click "Convert to GIF"
+   - Download the result
 
 4. **Next immediate task:**
-   Create `app/video-processor/hooks/use-ffmpeg.ts` for FFmpeg integration
+   Build the advanced video processor page (`app/process/page.tsx`) with support for multiple formats and options
 
 ## ⚠️ Known Issues / Considerations
 
@@ -163,4 +180,4 @@ Create `app/process/page.tsx` that:
 
 ---
 
-**Immediate next action:** Implement the FFmpeg hook and processing logic to make the video processor actually functional, then build the main processing page that ties all the UI components together with real video processing capabilities.
+**Immediate next action:** Build the advanced video processor page (`app/process/page.tsx`) with support for multiple formats and options, then integrate remaining video processing features.
