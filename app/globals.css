@@ -1,109 +1,112 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    /* Pastel Color Palette */
+    --pastel-pink: #ffd6e0;
+    --pastel-yellow: #fff4bd;
+    --pastel-blue: #d4e5ff;
+    --pastel-green: #d4f5d4;
+    --pastel-purple: #e6d5ff;
+    --pastel-orange: #ffe4d6;
+    --pastel-coral: #ff8b8b;
+    --pastel-lavender: #e8d5e8;
+    --pastel-mint: #d4f5e0;
 
-    --font-sans: DM Sans, sans-serif;
-    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-    --font-mono: Space Mono, monospace;
+    /* Greyish Dark Mode Colors */
+    --dark-bg: #3d3d3d;
+    --dark-card: #4a4a4a;
+    --dark-border: #5a5a5a;
+    --dark-text: #e8e8e8;
+    --dark-muted: #a0a0a0;
+    --dark-pastel-pink: #5a4a50;
+    --dark-pastel-yellow: #5a5440;
+    --dark-pastel-blue: #404a5a;
+    --dark-pastel-green: #405a40;
+    --dark-pastel-purple: #4a405a;
 
+    /* Common */
+    --black: #1a1a1a;
+    --white: #ffffff;
+    --gray-100: #f5f5f5;
+    --gray-200: #e5e5e5;
+    --gray-300: #d4d4d4;
+    --gray-400: #a3a3a3;
+    --gray-500: #737373;
+    --gray-600: #525252;
+    --gray-700: #404040;
+    --gray-800: #262626;
+    --gray-900: #171717;
+
+    /* Border Radius */
     --radius: 0.625rem;
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
 
-    --shadow-2xs: 4px 4px 0px 0px oklch(0 0 0 / 0.5);
-    --shadow-xs: 4px 4px 0px 0px oklch(0 0 0 / 0.5);
-    --shadow-sm:
-        4px 4px 0px 0px oklch(0 0 0 / 1), 4px 1px 2px -1px oklch(0 0 0 / 1);
-    --shadow:
-        4px 4px 0px 0px oklch(0 0 0 / 1), 4px 1px 2px -1px oklch(0 0 0 / 1);
-    --shadow-md:
-        4px 4px 0px 0px oklch(0 0 0 / 1), 4px 2px 4px -1px oklch(0 0 0 / 1);
-    --shadow-lg:
-        4px 4px 0px 0px oklch(0 0 0 / 1), 4px 4px 6px -1px oklch(0 0 0 / 1);
-    --shadow-xl:
-        4px 4px 0px 0px oklch(0 0 0 / 1), 4px 8px 10px -1px oklch(0 0 0 / 1);
-    --shadow-2xl: 4px 4px 0px 0px oklch(0 0 0 / 2.5);
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    /* Shadows - Neo Brutalist Style */
+    --shadow-2xs: 1px 1px 0px 0px var(--black);
+    --shadow-xs: 2px 2px 0px 0px var(--black);
+    --shadow-sm: 3px 3px 0px 0px var(--black);
+    --shadow: 4px 4px 0px 0px var(--black);
+    --shadow-md: 5px 5px 0px 0px var(--black);
+    --shadow-lg: 6px 6px 0px 0px var(--black);
+    --shadow-xl: 8px 8px 0px 0px var(--black);
+    --shadow-2xl: 10px 10px 0px 0px var(--black);
+
+    /* Theme Colors */
+    --background: #fafaf8;
+    --foreground: var(--black);
+    --card: var(--white);
+    --card-foreground: var(--black);
+    --popover: var(--white);
+    --popover-foreground: var(--black);
+    --primary: #f97316;
+    --primary-foreground: var(--white);
+    --secondary: var(--gray-100);
+    --secondary-foreground: var(--black);
+    --muted: var(--gray-100);
+    --muted-foreground: var(--gray-500);
+    --accent: var(--pastel-blue);
+    --accent-foreground: var(--black);
+    --destructive: #ef4444;
+    --destructive-foreground: var(--white);
+    --border: var(--black);
+    --input: var(--black);
+    --ring: var(--black);
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: var(--dark-bg);
+    --foreground: var(--dark-text);
+    --card: var(--dark-card);
+    --card-foreground: var(--dark-text);
+    --popover: var(--dark-card);
+    --popover-foreground: var(--dark-text);
+    --primary: #fb923c;
+    --primary-foreground: var(--black);
+    --secondary: var(--gray-700);
+    --secondary-foreground: var(--dark-text);
+    --muted: var(--gray-700);
+    --muted-foreground: var(--dark-muted);
+    --accent: var(--dark-pastel-blue);
+    --accent-foreground: var(--dark-text);
+    --destructive: #f87171;
+    --destructive-foreground: var(--white);
+    --border: var(--dark-border);
+    --input: var(--dark-border);
+    --ring: var(--dark-text);
 
-    --shadow-2xs: 0 1px 3px 0px oklch(0 0 0 / 0.05);
-    --shadow-xs: 0 1px 3px 0px oklch(0 0 0 / 0.05);
-    --shadow-sm:
-        0 1px 3px 0px oklch(0 0 0 / 0.1), 0 1px 2px -1px oklch(0 0 0 / 0.1);
-    --shadow:
-        0 1px 3px 0px oklch(0 0 0 / 0.1), 0 1px 2px -1px oklch(0 0 0 / 0.1);
-    --shadow-md:
-        0 1px 3px 0px oklch(0 0 0 / 0.1), 0 2px 4px -1px oklch(0 0 0 / 0.1);
-    --shadow-lg:
-        0 1px 3px 0px oklch(0 0 0 / 0.1), 0 4px 6px -1px oklch(0 0 0 / 0.1);
-    --shadow-xl:
-        0 1px 3px 0px oklch(0 0 0 / 0.1), 0 8px 10px -1px oklch(0 0 0 / 0.1);
-    --shadow-2xl: 0 1px 3px 0px oklch(0 0 0 / 0.25);
+    /* Override pastels for dark mode */
+    --pastel-pink: var(--dark-pastel-pink);
+    --pastel-yellow: var(--dark-pastel-yellow);
+    --pastel-blue: var(--dark-pastel-blue);
+    --pastel-green: var(--dark-pastel-green);
+    --pastel-purple: var(--dark-pastel-purple);
 }
 
 @theme inline {
@@ -122,31 +125,15 @@
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
     --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-    --color-sidebar: var(--sidebar);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
 
-    --font-sans: var(--font-sans);
-    --font-mono: var(--font-mono);
-    --font-serif: var(--font-serif);
-
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
+    --radius-sm: var(--radius-sm);
+    --radius-md: var(--radius-md);
+    --radius-lg: var(--radius-lg);
+    --radius-xl: var(--radius-xl);
 
     --shadow-2xs: var(--shadow-2xs);
     --shadow-xs: var(--shadow-xs);
@@ -156,16 +143,445 @@
     --shadow-lg: var(--shadow-lg);
     --shadow-xl: var(--shadow-xl);
     --shadow-2xl: var(--shadow-2xl);
-    --radius-2xl: calc(var(--radius) + 8px);
-    --radius-3xl: calc(var(--radius) + 12px);
-    --radius-4xl: calc(var(--radius) + 16px);
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        border-color: var(--border);
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        background-color: var(--background);
+        color: var(--foreground);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
     }
+}
+
+/* Neo Brutalist Card */
+.brutal-card {
+    background-color: var(--card);
+    border: 2px solid var(--black);
+    box-shadow: var(--shadow-sm);
+    transition: all 150ms ease;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+.brutal-card:hover {
+    box-shadow: var(--shadow);
+}
+
+.brutal-card > * {
+    min-width: 0;
+}
+
+/* Neo Brutalist Button Base */
+.brutal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    border: 2px solid var(--black);
+    transition: all 150ms ease;
+    cursor: pointer;
+    min-height: 2.75rem;
+    text-align: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    overflow: visible;
+    position: relative;
+}
+
+.brutal-btn:active {
+    box-shadow: none;
+}
+
+.brutal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Button Variants */
+.brutal-btn-primary {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.brutal-btn-primary:hover:not(:disabled) {
+    box-shadow: var(--shadow);
+}
+
+.brutal-btn-secondary {
+    background-color: var(--secondary);
+    color: var(--foreground);
+    box-shadow: var(--shadow-sm);
+}
+
+.brutal-btn-secondary:hover:not(:disabled) {
+    box-shadow: var(--shadow);
+}
+
+.brutal-btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--black);
+}
+
+.brutal-btn-outline:hover:not(:disabled) {
+    background-color: var(--secondary);
+}
+
+.brutal-btn-ghost {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.brutal-btn-ghost:hover:not(:disabled) {
+    background-color: var(--secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Pastel Button Variants */
+.brutal-btn-pink {
+    background-color: var(--pastel-pink);
+    color: var(--black);
+    box-shadow: var(--shadow-sm);
+}
+
+.brutal-btn-yellow {
+    background-color: var(--pastel-yellow);
+    color: var(--black);
+    box-shadow: var(--shadow-sm);
+}
+
+.brutal-btn-blue {
+    background-color: var(--pastel-blue);
+    color: var(--black);
+    box-shadow: var(--shadow-sm);
+}
+
+.brutal-btn-green {
+    background-color: var(--pastel-green);
+    color: var(--black);
+    box-shadow: var(--shadow-sm);
+}
+
+.brutal-btn-purple {
+    background-color: var(--pastel-purple);
+    color: var(--black);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Neo Brutalist Input */
+.brutal-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    border: 2px solid var(--black);
+    box-shadow: var(--shadow-xs);
+    transition: all 150ms ease;
+}
+
+.brutal-input:focus {
+    outline: none;
+    box-shadow: var(--shadow-sm);
+    background-color: var(--pastel-yellow);
+}
+
+/* Neo Brutalist Badge */
+.brutal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 2px solid var(--black);
+    white-space: nowrap;
+    line-height: 1;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    overflow: visible;
+    position: relative;
+}
+
+.brutal-badge-pink {
+    background-color: var(--pastel-pink);
+}
+
+.brutal-badge-yellow {
+    background-color: var(--pastel-yellow);
+}
+
+.brutal-badge-blue {
+    background-color: var(--pastel-blue);
+}
+
+.brutal-badge-green {
+    background-color: var(--pastel-green);
+}
+
+.brutal-badge-purple {
+    background-color: var(--pastel-purple);
+}
+
+/* Neo Brutalist Select */
+.brutal-select {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    background-color: white;
+    border: 2px solid var(--black);
+    box-shadow: var(--shadow-xs);
+    transition: all 150ms ease;
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.brutal-select:focus {
+    outline: none;
+    box-shadow: var(--shadow-sm);
+    background-color: var(--pastel-yellow);
+}
+
+/* Section Card */
+.section-card {
+    background-color: var(--card);
+    border: 2px solid var(--black);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    transition: all 150ms ease;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+.section-card > * {
+    min-width: 0;
+}
+
+.section-card:hover {
+    box-shadow: var(--shadow);
+}
+
+.section-card-pink {
+    background-color: var(--pastel-pink);
+}
+
+.section-card-pink:hover {
+    background-color: color-mix(in srgb, var(--pastel-pink) 90%, white);
+}
+
+.section-card-yellow {
+    background-color: var(--pastel-yellow);
+}
+
+.section-card-yellow:hover {
+    background-color: color-mix(in srgb, var(--pastel-yellow) 90%, white);
+}
+
+.section-card-blue {
+    background-color: var(--pastel-blue);
+}
+
+.section-card-blue:hover {
+    background-color: color-mix(in srgb, var(--pastel-blue) 90%, white);
+}
+
+.section-card-green {
+    background-color: var(--pastel-green);
+}
+
+.section-card-green:hover {
+    background-color: color-mix(in srgb, var(--pastel-green) 90%, white);
+}
+
+.section-card-purple {
+    background-color: var(--pastel-purple);
+}
+
+.section-card-purple:hover {
+    background-color: color-mix(in srgb, var(--pastel-purple) 90%, white);
+}
+
+/* Icon Container */
+.icon-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 2px solid var(--black);
+    box-shadow: var(--shadow-xs);
+}
+
+/* Toggle Button Group */
+.toggle-group {
+    display: inline-flex;
+    border: 2px solid var(--black);
+    overflow: hidden;
+}
+
+.toggle-btn {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    background-color: white;
+    border-right: 2px solid var(--black);
+    transition: all 100ms ease;
+    cursor: pointer;
+}
+
+.toggle-btn:last-child {
+    border-right: none;
+}
+
+.toggle-btn:hover {
+    background-color: var(--secondary);
+}
+
+.toggle-btn.active {
+    background-color: var(--pastel-green);
+    font-weight: 700;
+}
+
+/* Slider */
+.brutal-slider {
+    width: 100%;
+    height: 0.75rem;
+    background-color: white;
+    border: 2px solid var(--black);
+    appearance: none;
+    cursor: pointer;
+}
+
+.brutal-slider::-webkit-slider-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: var(--pastel-coral);
+    border: 2px solid var(--black);
+    appearance: none;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.brutal-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.brutal-slider::-moz-range-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: var(--pastel-coral);
+    border: 2px solid var(--black);
+    cursor: pointer;
+}
+
+/* Upload Zone */
+.upload-zone {
+    position: relative;
+    border: 3px dashed var(--black);
+    background-color: var(--pastel-blue);
+    padding: 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 200ms ease;
+}
+
+.upload-zone:hover {
+    background-color: var(--pastel-green);
+    border-style: solid;
+}
+
+.upload-zone.dragging {
+    background-color: var(--pastel-green);
+    border-style: solid;
+    transform: scale(1.02);
+}
+
+/* Progress Bar */
+.progress-container {
+    width: 100%;
+    height: 1.5rem;
+    background-color: white;
+    border: 2px solid var(--black);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        var(--pastel-pink),
+        var(--pastel-coral)
+    );
+    transition: width 300ms ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.animate-pulse-subtle {
+    animation: pulse 2s ease infinite;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
 }

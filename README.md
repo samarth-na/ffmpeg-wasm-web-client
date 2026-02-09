@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FFmpeg WASM Web Client
+
+A client-side video processing web app built with Next.js and [ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm). All video processing happens directly in the browser — no server or file uploads required.
+
+Supports format conversion, resizing, compression, trimming, and frame rate adjustment for videos up to 500MB.
+
+## Tech Stack
+
+- **Framework:** Next.js 16.1.6 (App Router)
+- **Runtime:** React 19
+- **Styling:** Tailwind CSS v4, shadcn/ui (New York style)
+- **Animation:** Framer Motion
+- **Icons:** Lucide React
+- **Video Processing:** ffmpeg.wasm (planned)
+- **Package Manager:** Bun
+
+## Design
+
+The UI follows a **Pastel Neo-Brutalist** design system — soft pastel colors paired with hard 2px black borders and offset box shadows. Dark mode uses a warm grey palette (#3D3D3D) rather than pure black.
+
+## Project Structure
+
+```
+app/
+├── globals.css                # Theme, CSS variables, component classes
+├── layout.tsx                 # Root layout
+├── page.tsx                   # Landing page
+└── demo/page.tsx              # Component showcase
+
+components/
+├── ui/                        # shadcn primitives (button, card, input)
+└── video-processor/           # Video processing UI components
+    ├── upload-zone.tsx        # Drag & drop file upload
+    ├── video-preview.tsx      # Video thumbnail + metadata
+    ├── preset-selector.tsx    # Quick presets (YouTube, Instagram, etc.)
+    ├── format-selector.tsx    # Output format dropdown
+    ├── quality-options.tsx    # Resolution, quality, frame rate controls
+    ├── trim-inputs.tsx        # Time-based trimming
+    ├── process-button.tsx     # Processing trigger with progress bar
+    ├── download-section.tsx   # Download result with file comparison
+    └── theme-toggle.tsx       # Dark/light mode toggle
+
+lib/
+└── utils.ts                   # Utility functions (cn helper)
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- [Bun](https://bun.sh/) (recommended) or Node.js 18+
+
+### Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
+```
+
+### Run the dev server
+
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Other commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+bun run build    # Production build
+bun run start    # Start production server
+bun run lint     # Run ESLint
+```
 
-## Learn More
+## Demo
 
-To learn more about Next.js, take a look at the following resources:
+Visit [http://localhost:3000/demo](http://localhost:3000/demo) to see the component showcase — theme colors, typography, buttons, badges, cards, form elements, and all video processor components.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Roadmap
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [x] Pastel Neo-Brutalist design system with dark mode
+- [x] All video processor UI components
+- [x] Component demo/showcase page
+- [ ] FFmpeg WASM integration (`hooks/use-ffmpeg.ts`)
+- [ ] FFmpeg command builder service (`lib/ffmpeg-commands.ts`)
+- [ ] Main processing page connecting UI to FFmpeg
+- [ ] Merge videos, extract audio, thumbnail generation
+- [ ] Batch processing
+- [ ] Error boundaries and memory management
+- [ ] Mobile optimization
 
-## Deploy on Vercel
+## Constraints
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **File size:** 500MB max (browser memory limitation)
+- **Performance:** WASM is ~12-25x slower than native FFmpeg
+- **Multi-threading:** Requires `SharedArrayBuffer` and appropriate COOP/COEP headers
+- **Client-only:** No server-side processing; everything runs in the browser
