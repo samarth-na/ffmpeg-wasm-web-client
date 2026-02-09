@@ -88,10 +88,10 @@ export function TrimInputs({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      <h3 className="font-bold text-lg flex items-center gap-2">
+    <div className={`space-y-3 ${className}`}>
+      <h3 className="font-bold text-sm flex items-center gap-2">
         <span className="icon-container bg-[var(--pastel-pink)] rounded-lg">
-          <Scissors className="w-5 h-5" />
+          <Scissors className="w-4 h-4" />
         </span>
         Trim Video
       </h3>

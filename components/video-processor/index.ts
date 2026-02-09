@@ -2,11 +2,11 @@ export { UploadZone } from './upload-zone';
 
 export { VideoPreview } from './video-preview';
 
-export { PresetSelector, presets } from './preset-selector';
-export type { PresetType, Preset } from './preset-selector';
+export { PresetFormatSelector, presets, formats } from './preset-selector';
+export type { PresetType, Preset, VideoFormat, FormatOption } from './preset-selector';
 
-export { FormatSelector, formats } from './format-selector';
-export type { VideoFormat, FormatOption } from './format-selector';
+export { AspectRatioSelector, aspectRatios } from './aspect-ratio-selector';
+export type { AspectRatio, AspectRatioOption } from './aspect-ratio-selector';
 
 export { QualityOptions, resolutions, frameRates, qualityLabels } from './quality-options';
 export type { 
@@ -22,5 +22,3 @@ export { ProcessButton } from './process-button';
 export type { ProcessStatus } from './process-button';
 
 export { DownloadSection } from './download-section';
-
-export { ThemeToggle } from './theme-toggle';

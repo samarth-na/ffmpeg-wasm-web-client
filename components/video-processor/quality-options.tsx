@@ -58,50 +58,45 @@ export function QualityOptions({
   className = ''
 }: QualityOptionsProps) {
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       {/* Resolution Selector */}
-      <div className="space-y-3">
-        <h3 className="font-bold text-lg flex items-center gap-2">
+      <div className="space-y-2">
+        <h3 className="font-bold text-sm flex items-center gap-2">
           <span className="icon-container bg-[var(--pastel-green)] rounded-lg">
-            <Maximize className="w-5 h-5" />
+            <Maximize className="w-4 h-4" />
           </span>
           Resolution
         </h3>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {resolutions.map((res) => (
             <button
               key={res.value}
               onClick={() => onResolutionChange(res.value)}
               className={`
-                px-4 py-2 font-medium border-2 border-black transition-all duration-100
+                px-3 py-1.5 font-medium border-2 border-black transition-all duration-100
                 ${resolution === res.value 
                   ? 'bg-[var(--pastel-green)] shadow-xs translate-x-0.5 translate-y-0.5' 
                   : 'bg-white hover:bg-secondary shadow-sm hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow'
                 }
               `}
             >
-              <span className="block text-sm font-bold">{res.label}</span>
-              {res.dimensions && (
-                <span className="block text-xs text-muted-foreground mt-0.5">
-                  {res.dimensions}
-                </span>
-              )}
+              <span className="block text-xs font-bold">{res.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Quality Slider */}
-      <div className="space-y-3">
-        <h3 className="font-bold text-lg flex items-center gap-2">
+      <div className="space-y-2">
+        <h3 className="font-bold text-sm flex items-center gap-2">
           <span className="icon-container bg-[var(--pastel-coral)] rounded-lg">
-            <Gauge className="w-5 h-5" />
+            <Gauge className="w-4 h-4" />
           </span>
           Quality
         </h3>
         
-        <div className="space-y-2">
+        <div className="space-y-1">
           <input
             type="range"
             min={1}
@@ -111,7 +106,7 @@ export function QualityOptions({
             onChange={(e) => onQualityChange(Number(e.target.value))}
             className="brutal-slider rounded"
           />
-          <div className="flex justify-between text-sm font-medium">
+          <div className="flex justify-between text-xs font-medium">
             {qualityLabels.map((label, index) => (
               <span
                 key={label}
@@ -125,10 +120,10 @@ export function QualityOptions({
       </div>
 
       {/* Frame Rate Selector */}
-      <div className="space-y-3">
-        <h3 className="font-bold text-lg flex items-center gap-2">
+      <div className="space-y-2">
+        <h3 className="font-bold text-sm flex items-center gap-2">
           <span className="icon-container bg-[var(--pastel-purple)] rounded-lg">
-            <Activity className="w-5 h-5" />
+            <Activity className="w-4 h-4" />
           </span>
           Frame Rate
         </h3>

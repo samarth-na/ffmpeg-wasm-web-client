@@ -4,15 +4,15 @@ import React, { useState } from "react";
 import {
   UploadZone,
   VideoPreview,
-  PresetSelector,
-  FormatSelector,
+  PresetFormatSelector,
+  AspectRatioSelector,
   QualityOptions,
   TrimInputs,
   ProcessButton,
   DownloadSection,
-  ThemeToggle,
   type PresetType,
   type VideoFormat,
+  type AspectRatio,
   type Resolution,
   type FrameRate,
   type ProcessStatus,
@@ -38,6 +38,7 @@ export default function DemoPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<PresetType | null>(null);
   const [format, setFormat] = useState<VideoFormat>("mp4");
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("original");
   const [resolution, setResolution] = useState<Resolution>("original");
   const [quality, setQuality] = useState<number>(3);
   const [frameRate, setFrameRate] = useState<FrameRate>("original");
@@ -100,7 +101,6 @@ export default function DemoPage() {
               </p>
             </div>
           </div>
-          <ThemeToggle />
         </div>
       </header>
 
@@ -357,28 +357,31 @@ export default function DemoPage() {
             />
           </div>
 
-          {/* Preset Selector */}
+          {/* Preset & Format Selector */}
           <div className="section-card rounded-lg space-y-4">
             <h3 className="font-bold text-lg flex items-center gap-2">
               <Settings className="w-5 h-5" />
-              Preset Selector
+              Preset & Format Selector
             </h3>
-            <PresetSelector
-              selected={selectedPreset}
-              onSelect={(preset, settings) => {
+            <PresetFormatSelector
+              selectedPreset={selectedPreset}
+              onPresetSelect={(preset, settings) => {
                 setSelectedPreset(preset);
+                setFormat(settings.format as VideoFormat);
                 console.log("Preset settings:", settings);
               }}
+              format={format}
+              onFormatChange={setFormat}
             />
           </div>
 
-          {/* Format Selector */}
+          {/* Aspect Ratio Selector */}
           <div className="section-card rounded-lg space-y-4">
             <h3 className="font-bold text-lg flex items-center gap-2">
               <FileType className="w-5 h-5" />
-              Format Selector
+              Aspect Ratio Selector
             </h3>
-            <FormatSelector value={format} onChange={setFormat} />
+            <AspectRatioSelector value={aspectRatio} onChange={setAspectRatio} />
           </div>
 
           {/* Quality Options */}

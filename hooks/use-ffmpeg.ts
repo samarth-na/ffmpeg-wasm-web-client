@@ -3,6 +3,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL, fetchFile } from '@ffmpeg/util';
+import {
+  buildFFmpegCommand,
+  getOutputFilename,
+  getMimeType,
+  type ProcessOptions,
+} from '@/lib/ffmpeg-commands';
 
 export type FFmpegStatus = 'idle' | 'loading' | 'ready' | 'converting' | 'done' | 'error';
 
@@ -11,10 +17,15 @@ interface UseFFmpegReturn {
   progress: number;
   log: string;
   error: string | null;
+  // GIF-specific (legacy)
   gifUrl: string | null;
   gifSize: number;
+  // Generic output
+  outputUrl: string | null;
+  outputSize: number;
   load: () => Promise<void>;
   convertToGif: (file: File) => Promise<void>;
+  processVideo: (file: File, options: ProcessOptions) => Promise<void>;
   reset: () => void;
 }
 
@@ -26,15 +37,16 @@ export function useFFmpeg(): UseFFmpegReturn {
   const [error, setError] = useState<string | null>(null);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [gifSize, setGifSize] = useState(0);
+  const [outputUrl, setOutputUrl] = useState<string | null>(null);
+  const [outputSize, setOutputSize] = useState(0);
 
   // Cleanup blob URLs on unmount
   useEffect(() => {
     return () => {
-      if (gifUrl) {
-        URL.revokeObjectURL(gifUrl);
-      }
+      if (gifUrl) URL.revokeObjectURL(gifUrl);
+      if (outputUrl) URL.revokeObjectURL(outputUrl);
     };
-  }, [gifUrl]);
+  }, [gifUrl, outputUrl]);
 
   const load = useCallback(async () => {
     if (ffmpegRef.current) return;
@@ -134,17 +146,78 @@ export function useFFmpeg(): UseFFmpegReturn {
     }
   }, [gifUrl]);
 
-  const reset = useCallback(() => {
-    if (gifUrl) {
-      URL.revokeObjectURL(gifUrl);
+  const processVideo = useCallback(async (file: File, options: ProcessOptions) => {
+    // Auto-load FFmpeg if not loaded
+    if (!ffmpegRef.current) {
+      await load();
     }
+
+    const ffmpeg = ffmpegRef.current;
+    if (!ffmpeg) {
+      setError('FFmpeg failed to load');
+      setStatus('error');
+      return;
+    }
+
+    try {
+      setStatus('converting');
+      setProgress(0);
+      setError(null);
+
+      // Revoke previous output URL if any
+      if (outputUrl) {
+        URL.revokeObjectURL(outputUrl);
+        setOutputUrl(null);
+        setOutputSize(0);
+      }
+
+      const ext = file.name.split('.').pop() || 'mp4';
+      const inputName = `input.${ext}`;
+      const outputName = getOutputFilename(inputName, options.format);
+
+      // Write input file to ffmpeg virtual filesystem
+      await ffmpeg.writeFile(inputName, await fetchFile(file));
+
+      // Build and execute ffmpeg command
+      const args = buildFFmpegCommand(inputName, options);
+      await ffmpeg.exec(args);
+
+      // Read the output
+      const data = await ffmpeg.readFile(outputName);
+      const uint8 = new Uint8Array(data as Uint8Array);
+      const outputExt = outputName.split('.').pop() || 'mp4';
+      const mimeType = getMimeType(outputExt);
+      const blob = new Blob([uint8], { type: mimeType });
+
+      setOutputUrl(URL.createObjectURL(blob));
+      setOutputSize(blob.size);
+      setStatus('done');
+
+      // Cleanup virtual filesystem
+      try {
+        await ffmpeg.deleteFile(inputName);
+        await ffmpeg.deleteFile(outputName);
+      } catch {
+        // Ignore cleanup errors
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Processing failed');
+      setStatus('error');
+    }
+  }, [outputUrl, load]);
+
+  const reset = useCallback(() => {
+    if (gifUrl) URL.revokeObjectURL(gifUrl);
+    if (outputUrl) URL.revokeObjectURL(outputUrl);
     setGifUrl(null);
     setGifSize(0);
+    setOutputUrl(null);
+    setOutputSize(0);
     setProgress(0);
     setLog('');
     setError(null);
     setStatus(ffmpegRef.current ? 'ready' : 'idle');
-  }, [gifUrl]);
+  }, [gifUrl, outputUrl]);
 
   return {
     status,
@@ -153,8 +226,11 @@ export function useFFmpeg(): UseFFmpegReturn {
     error,
     gifUrl,
     gifSize,
+    outputUrl,
+    outputSize,
     load,
     convertToGif,
+    processVideo,
     reset,
   };
 }

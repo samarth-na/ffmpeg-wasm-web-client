@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
     /* Pastel Color Palette */
     --pastel-pink: #ffd6e0;
@@ -14,18 +12,6 @@
     --pastel-coral: #ff8b8b;
     --pastel-lavender: #e8d5e8;
     --pastel-mint: #d4f5e0;
-
-    /* Greyish Dark Mode Colors */
-    --dark-bg: #3d3d3d;
-    --dark-card: #4a4a4a;
-    --dark-border: #5a5a5a;
-    --dark-text: #e8e8e8;
-    --dark-muted: #a0a0a0;
-    --dark-pastel-pink: #5a4a50;
-    --dark-pastel-yellow: #5a5440;
-    --dark-pastel-blue: #404a5a;
-    --dark-pastel-green: #405a40;
-    --dark-pastel-purple: #4a405a;
 
     /* Common */
     --black: #1a1a1a;
@@ -78,35 +64,6 @@
     --border: var(--black);
     --input: var(--black);
     --ring: var(--black);
-}
-
-.dark {
-    --background: var(--dark-bg);
-    --foreground: var(--dark-text);
-    --card: var(--dark-card);
-    --card-foreground: var(--dark-text);
-    --popover: var(--dark-card);
-    --popover-foreground: var(--dark-text);
-    --primary: #fb923c;
-    --primary-foreground: var(--black);
-    --secondary: var(--gray-700);
-    --secondary-foreground: var(--dark-text);
-    --muted: var(--gray-700);
-    --muted-foreground: var(--dark-muted);
-    --accent: var(--dark-pastel-blue);
-    --accent-foreground: var(--dark-text);
-    --destructive: #f87171;
-    --destructive-foreground: var(--white);
-    --border: var(--dark-border);
-    --input: var(--dark-border);
-    --ring: var(--dark-text);
-
-    /* Override pastels for dark mode */
-    --pastel-pink: var(--dark-pastel-pink);
-    --pastel-yellow: var(--dark-pastel-yellow);
-    --pastel-blue: var(--dark-pastel-blue);
-    --pastel-green: var(--dark-pastel-green);
-    --pastel-purple: var(--dark-pastel-purple);
 }
 
 @theme inline {

@@ -1,293 +1,353 @@
 'use client';
 
-import { useState } from 'react';
-import { Upload, FileVideo, Download, RotateCcw, Loader2, Zap, AlertCircle } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Video, Terminal, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  UploadZone,
+  VideoPreview,
+  PresetFormatSelector,
+  AspectRatioSelector,
+  QualityOptions,
+  TrimInputs,
+  ProcessButton,
+  DownloadSection,
+} from '@/components/video-processor';
+import type {
+  PresetType,
+  VideoFormat,
+  AspectRatio,
+  Resolution,
+  FrameRate,
+  ProcessStatus,
+} from '@/components/video-processor';
 import { useFFmpeg } from '@/hooks/use-ffmpeg';
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
+import type { ProcessOptions } from '@/lib/ffmpeg-commands';
+import { getOutputFilename } from '@/lib/ffmpeg-commands';
 
 export default function Home() {
+  // --- File state ---
+  const [file, setFile] = useState<File | null>(null);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const videoMetaRef = useRef<HTMLVideoElement | null>(null);
+
+  // --- Preset state ---
+  const [selectedPreset, setSelectedPreset] = useState<PresetType | null>(null);
+
+  // --- Options state ---
+  const [format, setFormat] = useState<VideoFormat>('mp4');
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('original');
+  const [resolution, setResolution] = useState<Resolution>('original');
+  const [quality, setQuality] = useState(3);
+  const [frameRate, setFrameRate] = useState<FrameRate>('original');
+  const [startTime, setStartTime] = useState('00:00:00');
+  const [endTime, setEndTime] = useState('00:00:00');
+
+  // --- UI state ---
+  const [showLog, setShowLog] = useState(false);
+
+  // --- FFmpeg hook ---
   const {
     status,
     progress,
     log,
     error,
-    gifUrl,
-    gifSize,
-    load,
-    convertToGif,
+    outputUrl,
+    outputSize,
+    processVideo,
     reset,
   } = useFFmpeg();
 
-  const [file, setFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const MAX_SIZE_MB = 10;
-  const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
-
-  const handleFile = (f: File) => {
-    if (f.size > MAX_SIZE_BYTES) {
-      alert(`File too large. Maximum size is ${MAX_SIZE_MB}MB.`);
+  // --- Extract video duration when file is selected ---
+  useEffect(() => {
+    if (!file) {
+      setVideoDuration(0);
       return;
     }
-    if (!f.type.startsWith('video/')) {
-      alert('Please upload a video file.');
-      return;
-    }
-    setFile(f);
-  };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files.length > 0) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  };
+    const video = document.createElement('video');
+    videoMetaRef.current = video;
+    video.preload = 'metadata';
 
-  const handleConvert = async () => {
-    if (!file) return;
-    if (!status.match(/ready|done|error/)) {
-      // Need to load first
-      await load();
-    }
-    await convertToGif(file);
-  };
+    const objectUrl = URL.createObjectURL(file);
+    video.src = objectUrl;
 
-  const handleReset = () => {
+    const handleLoaded = () => {
+      const dur = Math.floor(video.duration);
+      setVideoDuration(dur);
+      const hrs = Math.floor(dur / 3600);
+      const mins = Math.floor((dur % 3600) / 60);
+      const secs = Math.floor(dur % 60);
+      setEndTime(
+        `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+      );
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    video.addEventListener('loadedmetadata', handleLoaded);
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoaded);
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [file]);
+
+  // --- Handlers ---
+  const handleFileSelect = useCallback((selectedFile: File) => {
+    setFile(selectedFile);
+  }, []);
+
+  const handleRemoveFile = useCallback(() => {
     setFile(null);
+    setSelectedPreset(null);
+    setFormat('mp4');
+    setAspectRatio('original');
+    setResolution('original');
+    setQuality(3);
+    setFrameRate('original');
+    setStartTime('00:00:00');
+    setEndTime('00:00:00');
     reset();
+  }, [reset]);
+
+  const handlePresetSelect = useCallback(
+    (preset: PresetType, settings: { format: string; resolution: string; quality: number; frameRate: number | 'original'; aspectRatio?: string }) => {
+      setSelectedPreset(preset);
+      setFormat(settings.format as VideoFormat);
+      setResolution(settings.resolution as Resolution);
+      setQuality(settings.quality);
+      setFrameRate(settings.frameRate as FrameRate);
+      if (settings.aspectRatio) {
+        setAspectRatio(settings.aspectRatio as AspectRatio);
+      } else {
+        setAspectRatio('original');
+      }
+    },
+    []
+  );
+
+  // --- Clear preset when user manually changes any option ---
+  const handleFormatChange = useCallback((val: VideoFormat) => {
+    setFormat(val);
+    setSelectedPreset(null);
+  }, []);
+
+  const handleAspectRatioChange = useCallback((val: AspectRatio) => {
+    setAspectRatio(val);
+    setSelectedPreset(null);
+  }, []);
+
+  const handleResolutionChange = useCallback((val: Resolution) => {
+    setResolution(val);
+    setSelectedPreset(null);
+  }, []);
+
+  const handleQualityChange = useCallback((val: number) => {
+    setQuality(val);
+    setSelectedPreset(null);
+  }, []);
+
+  const handleFrameRateChange = useCallback((val: FrameRate) => {
+    setFrameRate(val);
+    setSelectedPreset(null);
+  }, []);
+
+  const handleProcess = useCallback(async () => {
+    if (!file) return;
+
+    const options: ProcessOptions = {
+      format,
+      resolution,
+      quality,
+      frameRate,
+      startTime,
+      endTime,
+      aspectRatio,
+    };
+
+    await processVideo(file, options);
+  }, [file, format, resolution, quality, frameRate, startTime, endTime, aspectRatio, processVideo]);
+
+  const handleProcessAnother = useCallback(() => {
+    handleRemoveFile();
+  }, [handleRemoveFile]);
+
+  // --- Map FFmpeg hook status to ProcessButton status ---
+  const mapStatus = (): ProcessStatus => {
+    switch (status) {
+      case 'idle':
+        return 'idle';
+      case 'loading':
+        return 'loading';
+      case 'ready':
+        return 'idle';
+      case 'converting':
+        return 'processing';
+      case 'done':
+        return 'complete';
+      case 'error':
+        return 'error';
+      default:
+        return 'idle';
+    }
   };
 
-  const isLoading = status === 'loading';
-  const isConverting = status === 'converting';
-  const isDone = status === 'done';
-  const isWorking = isLoading || isConverting;
+  // --- Generate output filename for download ---
+  const getDownloadFilename = (): string => {
+    if (!file) return 'output.mp4';
+    const ext = file.name.split('.').pop() || 'mp4';
+    const inputName = `input.${ext}`;
+    const outputName = getOutputFilename(inputName, format);
+    const baseName = file.name.replace(/\.[^.]+$/, '');
+    const outExt = outputName.split('.').pop() || 'mp4';
+    return `${baseName}_processed.${outExt}`;
+  };
+
+  const isDone = status === 'done' && outputUrl;
+  const isProcessing = status === 'loading' || status === 'converting';
 
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12 px-4">
-      <div className="max-w-2xl mx-auto space-y-8">
-
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <h1 className="text-4xl font-black tracking-tight">
-            Video to GIF
-          </h1>
-          <p className="text-lg text-[var(--muted-foreground)]">
-            Convert any video to GIF right in your browser. No uploads, no server.
-          </p>
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Header */}
+      <header className="border-b-2 border-black bg-[var(--pastel-blue)]">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-3">
+          <div className="icon-container bg-white rounded-lg">
+            <Video className="w-5 h-5" />
+          </div>
+          <h1 className="text-xl font-black">Video Processor</h1>
+          <span className="text-sm text-muted-foreground ml-2">
+            All processing happens in your browser
+          </span>
         </div>
+      </header>
 
-        {/* Step 1: Load FFmpeg */}
-        {status === 'idle' && (
-          <div className="brutal-card rounded-lg p-6 text-center space-y-4 animate-fade-in">
-            <div className="icon-container bg-[var(--pastel-yellow)] rounded-lg mx-auto">
-              <Zap className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-bold">Load FFmpeg Engine</h2>
-            <p className="text-sm text-[var(--muted-foreground)]">
-              Downloads the FFmpeg WASM core (~31MB). This only happens once.
-            </p>
-            <button
-              onClick={load}
-              className="brutal-btn brutal-btn-primary rounded-lg mx-auto"
-            >
-              <Zap className="w-4 h-4" />
-              Load FFmpeg
-            </button>
-          </div>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-4">
+        {/* Upload state */}
+        {!file && !isDone && (
+          <section className="max-w-2xl mx-auto py-8 animate-fade-in">
+            <UploadZone onFileSelect={handleFileSelect} maxSizeMB={500} />
+          </section>
         )}
 
-        {/* Loading state */}
-        {isLoading && (
-          <div className="brutal-card rounded-lg p-6 text-center space-y-4 animate-fade-in">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto text-[var(--primary)]" />
-            <h2 className="text-xl font-bold">Loading FFmpeg...</h2>
-            <p className="text-sm text-[var(--muted-foreground)]">
-              Downloading WASM core (~31MB). Please wait.
-            </p>
-          </div>
-        )}
+        {/* Options state - compact grid layout */}
+        {file && !isDone && (
+          <div className="space-y-3 animate-fade-in">
+            {/* Row 1: Video Preview (full width) */}
+            <VideoPreview file={file} onRemove={handleRemoveFile} />
 
-        {/* Step 2: Upload Video (shown when ready, done, or error with ffmpeg loaded) */}
-        {(status === 'ready' || isDone || (status === 'error' && !isWorking)) && (
-          <>
-            {/* Upload zone */}
-            {!file && !isDone && (
-              <label
-                className={`upload-zone block rounded-lg cursor-pointer animate-fade-in ${isDragging ? 'dragging' : ''}`}
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
-                onDrop={handleDrop}
-              >
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="video/*"
-                  onChange={(e) => {
-                    if (e.target.files?.[0]) handleFile(e.target.files[0]);
-                  }}
+            {/* Row 2: Presets+Format (left) + Aspect Ratio (right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3">
+              <div className="brutal-card rounded-lg p-3">
+                <PresetFormatSelector
+                  selectedPreset={selectedPreset}
+                  onPresetSelect={handlePresetSelect}
+                  format={format}
+                  onFormatChange={handleFormatChange}
                 />
-                <div className="flex flex-col items-center gap-4">
-                  <div className="icon-container bg-white rounded-lg">
-                    <Upload className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-lg font-bold">Drop video here or click to browse</p>
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                      MP4, WebM, AVI, MOV, MKV
-                    </p>
-                  </div>
-                  <span className="brutal-badge brutal-badge-yellow rounded-lg">
-                    Max {MAX_SIZE_MB}MB
-                  </span>
-                </div>
-              </label>
-            )}
+              </div>
+              <div className="brutal-card rounded-lg p-3">
+                <AspectRatioSelector
+                  value={aspectRatio}
+                  onChange={handleAspectRatioChange}
+                />
+              </div>
+            </div>
 
-            {/* File selected - show info + convert button */}
-            {file && !isDone && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="brutal-card rounded-lg p-5">
-                  <div className="flex items-center gap-4">
-                    <div className="icon-container bg-[var(--pastel-blue)] rounded-lg flex-shrink-0">
-                      <FileVideo className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold truncate">{file.name}</p>
-                      <p className="text-sm text-[var(--muted-foreground)]">
-                        {formatFileSize(file.size)}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setFile(null)}
-                      className="brutal-btn brutal-btn-ghost rounded-lg p-2"
-                      title="Remove file"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+            {/* Row 3: Quality + Trim side by side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="brutal-card rounded-lg p-3">
+                <QualityOptions
+                  resolution={resolution}
+                  onResolutionChange={handleResolutionChange}
+                  quality={quality}
+                  onQualityChange={handleQualityChange}
+                  frameRate={frameRate}
+                  onFrameRateChange={handleFrameRateChange}
+                />
+              </div>
+              <div className="brutal-card rounded-lg p-3">
+                <TrimInputs
+                  startTime={startTime}
+                  endTime={endTime}
+                  maxDuration={videoDuration}
+                  onStartChange={setStartTime}
+                  onEndChange={setEndTime}
+                />
+              </div>
+            </div>
 
+            {/* Row 4: Process button full width */}
+            <ProcessButton
+              status={mapStatus()}
+              progress={progress}
+              onProcess={handleProcess}
+              disabled={!file || isProcessing}
+            />
+
+            {/* Error message */}
+            {error && (
+              <div className="p-3 bg-[var(--pastel-coral)] border-2 border-black rounded-lg animate-fade-in">
+                <p className="font-bold">Error</p>
+                <p className="text-sm mt-1">{error}</p>
                 <button
-                  onClick={handleConvert}
-                  disabled={isConverting}
-                  className="brutal-btn brutal-btn-primary rounded-lg w-full py-4 text-lg"
+                  onClick={() => reset()}
+                  className="mt-2 brutal-btn-ghost text-sm py-1 px-3 rounded"
                 >
-                  <Zap className="w-5 h-5" />
-                  <span className="font-black uppercase tracking-wide">Convert to GIF</span>
+                  Try Again
                 </button>
               </div>
             )}
-          </>
-        )}
 
-        {/* Converting state */}
-        {isConverting && (
-          <div className="brutal-card rounded-lg p-6 space-y-4 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-[var(--primary)]" />
-              <h2 className="text-xl font-bold">Converting...</h2>
-            </div>
-
-            {/* Progress bar */}
-            <div className="progress-container rounded-lg">
-              <div
-                className="progress-fill"
-                style={{ width: `${Math.max(progress, 2)}%` }}
-              />
-            </div>
-            <p className="text-sm text-[var(--muted-foreground)] font-mono truncate">
-              {log || 'Starting conversion...'}
-            </p>
-          </div>
-        )}
-
-        {/* Result */}
-        {isDone && gifUrl && (
-          <div className="space-y-6 animate-fade-in">
-            {/* GIF preview */}
-            <div className="brutal-card rounded-lg p-4 space-y-4">
-              <h2 className="text-xl font-bold text-center">Your GIF is ready!</h2>
-              <div className="flex justify-center">
-                <img
-                  src={gifUrl}
-                  alt="Converted GIF"
-                  className="rounded-lg border-2 border-[var(--black)] max-w-full"
-                  style={{ maxHeight: 400 }}
-                />
-              </div>
-
-              {/* Size comparison */}
-              {file && (
-                <div className="grid grid-cols-3 gap-3 items-center">
-                  <div className="text-center p-3 bg-[var(--secondary)] rounded-lg">
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase font-bold mb-1">
-                      Original
-                    </p>
-                    <p className="text-base font-bold">{formatFileSize(file.size)}</p>
-                  </div>
-                  <div className="flex justify-center text-[var(--muted-foreground)]">
-                    &rarr;
-                  </div>
-                  <div className="text-center p-3 bg-[var(--pastel-green)] border-2 border-[var(--black)] rounded-lg">
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase font-bold mb-1">
-                      GIF
-                    </p>
-                    <p className="text-base font-bold">{formatFileSize(gifSize)}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Download button */}
-            <a
-              href={gifUrl}
-              download={file ? file.name.replace(/\.[^.]+$/, '.gif') : 'output.gif'}
-              className="brutal-btn w-full py-5 text-lg bg-[var(--pastel-green)] rounded-lg"
-            >
-              <Download className="w-6 h-6" />
-              <span className="font-black uppercase tracking-wide">Download GIF</span>
-            </a>
-
-            {/* Convert another */}
-            <button
-              onClick={handleReset}
-              className="brutal-btn brutal-btn-outline w-full py-3 rounded-lg"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span className="font-semibold">Convert Another Video</span>
-            </button>
-          </div>
-        )}
-
-        {/* Error state */}
-        {error && (
-          <div className="brutal-card rounded-lg p-5 bg-[var(--pastel-coral)] animate-fade-in">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            {/* Log output (collapsible) */}
+            {log && (
               <div>
-                <p className="font-bold">Something went wrong</p>
-                <p className="text-sm mt-1">{error}</p>
+                <button
+                  onClick={() => setShowLog(!showLog)}
+                  className="brutal-btn-ghost w-full py-2 px-4 rounded-lg flex items-center justify-between text-sm font-medium"
+                >
+                  <span className="flex items-center gap-2">
+                    <Terminal className="w-4 h-4" />
+                    FFmpeg Log
+                  </span>
+                  {showLog ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {showLog && (
+                  <div className="mt-2 p-3 bg-black text-green-400 rounded-lg border-2 border-black font-mono text-xs max-h-40 overflow-y-auto">
+                    {log}
+                  </div>
+                )}
               </div>
-            </div>
-            <button
-              onClick={handleReset}
-              className="brutal-btn brutal-btn-outline rounded-lg mt-4"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Try Again
-            </button>
+            )}
           </div>
         )}
 
-      </div>
+        {/* Download state */}
+        {isDone && outputUrl && (
+          <section className="max-w-2xl mx-auto py-6 space-y-4 animate-fade-in">
+            <DownloadSection
+              downloadUrl={outputUrl}
+              fileName={getDownloadFilename()}
+              originalSize={file?.size ?? 0}
+              newSize={outputSize}
+              onProcessAnother={handleProcessAnother}
+            />
+          </section>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t-2 border-black/10 bg-background">
+        <div className="max-w-7xl mx-auto px-6 py-3 text-center text-sm text-muted-foreground">
+          Powered by{' '}
+          <a
+            href="https://github.com/ffmpegwasm/ffmpeg.wasm"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline font-medium"
+          >
+            ffmpeg.wasm
+          </a>
+          {' '}&mdash; No files are uploaded to any server. Max file size 500MB.
+        </div>
+      </footer>
     </div>
   );
 }
