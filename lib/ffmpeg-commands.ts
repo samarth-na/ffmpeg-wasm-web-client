@@ -49,20 +49,45 @@ const CRF_MAP_VP9: Record<number, number> = {
 /**
  * Returns the appropriate video codec args for a given format.
  */
-function getCodecArgs(format: VideoFormat, quality: number): string[] {
+function getCodecArgs(format: VideoFormat, quality: number, isMultiThreaded: boolean): string[] {
   if (format === 'gif') {
     // GIF has no video codec flags — handled via filters
     return [];
   }
 
   const isWebm = format === 'webm';
+  const threads = isMultiThreaded ? '0' : '1'; // 0 = auto-detect thread count
 
   if (isWebm) {
-    return ['-c:v', 'libvpx-vp9', '-crf', String(CRF_MAP_VP9[quality] ?? 33), '-b:v', '0'];
+    // VP9: Use faster settings
+    return [
+      '-c:v', 'libvpx-vp9',
+      '-crf', String(CRF_MAP_VP9[quality] ?? 33),
+      '-b:v', '0',
+      '-threads', threads,
+      '-cpu-used', '5', // 0-5, higher = faster (slightly lower quality)
+      '-row-mt', '1', // Enable row-based multi-threading
+    ];
   }
 
-  // For mp4, mkv, avi, mov — use libx264 + AAC audio
-  return ['-c:v', 'libx264', '-crf', String(CRF_MAP[quality] ?? 23), '-preset', 'medium'];
+  // For mp4, mkv, avi, mov — use libx264 + AAC audio with optimized settings
+  // Use 'fast' preset for 20-30% speed improvement over 'medium'
+  // Reference frames: 1 for speed (default is 3)
+  const args: string[] = [
+    '-c:v', 'libx264',
+    '-crf', String(CRF_MAP[quality] ?? 23),
+    '-preset', 'fast', // Changed from 'medium' to 'fast'
+    '-threads', threads,
+    '-refs', '1', // Reduce reference frames for speed
+    '-x264opts', 'rc-lookahead=20', // Optimize rate control
+  ];
+
+  // Add faststart for MP4 to enable streaming playback
+  if (format === 'mp4') {
+    args.push('-movflags', '+faststart');
+  }
+
+  return args;
 }
 
 /**
@@ -147,13 +172,14 @@ export function getOutputFilename(inputName: string, format: VideoFormat): strin
  * Example output for mp4, 720p, quality 3, 30fps, trim 00:00:10 to 00:01:30:
  *   ['-ss', '00:00:10', '-to', '00:01:30', '-i', 'input.mp4',
  *    '-vf', 'scale=1280:-2', '-r', '30',
- *    '-c:v', 'libx264', '-crf', '18', '-preset', 'medium',
+ *    '-c:v', 'libx264', '-crf', '18', '-preset', 'fast',
  *    '-c:a', 'aac', '-b:a', '128k',
  *    '-y', 'output.mp4']
  */
 export function buildFFmpegCommand(
   inputName: string,
-  options: ProcessOptions
+  options: ProcessOptions,
+  isMultiThreaded: boolean = false
 ): string[] {
   const { format, resolution, quality, frameRate, startTime, endTime, aspectRatio } = options;
   const args: string[] = [];
@@ -211,7 +237,7 @@ export function buildFFmpegCommand(
   }
 
   // --- Codec & quality ---
-  args.push(...getCodecArgs(effectiveFormat, quality));
+  args.push(...getCodecArgs(effectiveFormat, quality, isMultiThreaded));
   args.push(...getAudioArgs(effectiveFormat));
 
   // --- Output ---

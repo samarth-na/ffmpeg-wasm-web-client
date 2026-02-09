@@ -12,6 +12,9 @@ import {
 
 export type FFmpegStatus = 'idle' | 'loading' | 'ready' | 'converting' | 'done' | 'error';
 
+// Check if SharedArrayBuffer is available (requires COOP/COEP headers)
+const isSharedArrayBufferAvailable = typeof SharedArrayBuffer !== 'undefined';
+
 interface UseFFmpegReturn {
   status: FFmpegStatus;
   progress: number;
@@ -23,6 +26,7 @@ interface UseFFmpegReturn {
   // Generic output
   outputUrl: string | null;
   outputSize: number;
+  isMultiThreaded: boolean;
   load: () => Promise<void>;
   convertToGif: (file: File) => Promise<void>;
   processVideo: (file: File, options: ProcessOptions) => Promise<void>;
@@ -39,6 +43,7 @@ export function useFFmpeg(): UseFFmpegReturn {
   const [gifSize, setGifSize] = useState(0);
   const [outputUrl, setOutputUrl] = useState<string | null>(null);
   const [outputSize, setOutputSize] = useState(0);
+  const [isMultiThreaded, setIsMultiThreaded] = useState(false);
 
   // Cleanup blob URLs on unmount
   useEffect(() => {
@@ -66,6 +71,27 @@ export function useFFmpeg(): UseFFmpegReturn {
         setProgress(Math.round(Math.min(p, 1) * 100));
       });
 
+      // Try multi-threaded version first if SharedArrayBuffer is available
+      if (isSharedArrayBufferAvailable) {
+        try {
+          const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/umd';
+          
+          await ffmpeg.load({
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+          });
+
+          ffmpegRef.current = ffmpeg;
+          setIsMultiThreaded(true);
+          setStatus('ready');
+          return;
+        } catch (mtError) {
+          console.warn('Multi-threaded FFmpeg failed, falling back to single-thread:', mtError);
+          // Fall through to single-threaded
+        }
+      }
+
+      // Single-threaded fallback
       const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
 
       await ffmpeg.load({
@@ -74,6 +100,7 @@ export function useFFmpeg(): UseFFmpegReturn {
       });
 
       ffmpegRef.current = ffmpeg;
+      setIsMultiThreaded(false);
       setStatus('ready');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load FFmpeg');
@@ -147,14 +174,9 @@ export function useFFmpeg(): UseFFmpegReturn {
   }, [gifUrl]);
 
   const processVideo = useCallback(async (file: File, options: ProcessOptions) => {
-    // Auto-load FFmpeg if not loaded
-    if (!ffmpegRef.current) {
-      await load();
-    }
-
     const ffmpeg = ffmpegRef.current;
     if (!ffmpeg) {
-      setError('FFmpeg failed to load');
+      setError('FFmpeg not loaded. Please load FFmpeg first.');
       setStatus('error');
       return;
     }
@@ -179,7 +201,7 @@ export function useFFmpeg(): UseFFmpegReturn {
       await ffmpeg.writeFile(inputName, await fetchFile(file));
 
       // Build and execute ffmpeg command
-      const args = buildFFmpegCommand(inputName, options);
+      const args = buildFFmpegCommand(inputName, options, isMultiThreaded);
       await ffmpeg.exec(args);
 
       // Read the output
@@ -204,7 +226,7 @@ export function useFFmpeg(): UseFFmpegReturn {
       setError(err instanceof Error ? err.message : 'Processing failed');
       setStatus('error');
     }
-  }, [outputUrl, load]);
+  }, [outputUrl, isMultiThreaded]);
 
   const reset = useCallback(() => {
     if (gifUrl) URL.revokeObjectURL(gifUrl);
@@ -228,6 +250,7 @@ export function useFFmpeg(): UseFFmpegReturn {
     gifSize,
     outputUrl,
     outputSize,
+    isMultiThreaded,
     load,
     convertToGif,
     processVideo,

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Video, Terminal, ChevronDown, ChevronUp } from 'lucide-react';
+import { Video, Terminal, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 import {
   UploadZone,
   VideoPreview,
@@ -53,6 +53,8 @@ export default function Home() {
     error,
     outputUrl,
     outputSize,
+    isMultiThreaded,
+    load,
     processVideo,
     reset,
   } = useFFmpeg();
@@ -216,12 +218,63 @@ export default function Home() {
           <span className="text-sm text-muted-foreground ml-2">
             All processing happens in your browser
           </span>
+          {isMultiThreaded && (
+            <span className="ml-auto text-xs font-medium bg-[var(--pastel-green)] border border-black px-2 py-1 rounded">
+              Multi-Thread
+            </span>
+          )}
         </div>
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-4">
+        {/* Load FFmpeg Engine state */}
+        {!file && !isDone && status === 'idle' && (
+          <section className="max-w-2xl mx-auto py-8 animate-fade-in">
+            <div className="brutal-card bg-white rounded-xl p-8 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-[var(--pastel-yellow)] border-2 border-black rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <Zap className="w-8 h-8 text-black" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-black mb-2">Load FFmpeg Engine</h2>
+              <p className="text-muted-foreground mb-6">
+                Downloads the FFmpeg WASM core (~31MB). This only happens once.
+              </p>
+              <button
+                onClick={load}
+                className="brutal-btn text-lg py-3 px-8 rounded-lg inline-flex items-center gap-2"
+              >
+                <Zap className="w-5 h-5" />
+                Load FFmpeg
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* Loading FFmpeg state */}
+        {!file && !isDone && status === 'loading' && (
+          <section className="max-w-2xl mx-auto py-8 animate-fade-in">
+            <div className="brutal-card bg-white rounded-xl p-8 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-[var(--pastel-yellow)] border-2 border-black rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
+                  <Zap className="w-8 h-8 text-black" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-black mb-2">Loading FFmpeg...</h2>
+              <p className="text-muted-foreground">
+                Downloading ~31MB WASM core. Please wait.
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                {typeof SharedArrayBuffer !== 'undefined' 
+                  ? 'Attempting multi-threaded mode (2-5x faster)...' 
+                  : 'Single-threaded mode (slower, but compatible)'}
+              </p>
+            </div>
+          </section>
+        )}
+
         {/* Upload state */}
-        {!file && !isDone && (
+        {!file && !isDone && status === 'ready' && (
           <section className="max-w-2xl mx-auto py-8 animate-fade-in">
             <UploadZone onFileSelect={handleFileSelect} maxSizeMB={500} />
           </section>
@@ -230,6 +283,13 @@ export default function Home() {
         {/* Options state - compact grid layout */}
         {file && !isDone && (
           <div className="space-y-3 animate-fade-in">
+            {/* Performance warning for single-thread */}
+            {!isMultiThreaded && (
+              <div className="bg-[var(--pastel-yellow)] border-2 border-black rounded-lg p-3 text-sm">
+                <strong>Slower Mode:</strong> Multi-threading not available. Processing will take longer (~12-25x slower than native). 
+                <a href="https://github.com/ffmpegwasm/ffmpeg.wasm/blob/main/docs/performance.md" target="_blank" rel="noopener noreferrer" className="underline ml-1">Learn more</a>
+              </div>
+            )}
             {/* Row 1: Video Preview (full width) */}
             <VideoPreview file={file} onRemove={handleRemoveFile} />
 
