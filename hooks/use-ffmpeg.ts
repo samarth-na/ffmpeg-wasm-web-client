@@ -96,18 +96,18 @@ export function useFFmpeg(): UseFFmpegReturn {
       await ffmpeg.writeFile(inputName, await fetchFile(file));
 
       // Two-pass palette-based GIF conversion for better quality
-      // Pass 1: Generate optimal palette
+      // Pass 1: Generate optimal palette (preserve original resolution)
       await ffmpeg.exec([
         '-i', inputName,
-        '-vf', 'fps=10,scale=320:-1:flags=lanczos,palettegen',
+        '-vf', 'fps=10,palettegen',
         '-y', 'palette.png',
       ]);
 
-      // Pass 2: Use palette to create high-quality GIF
+      // Pass 2: Use palette to create high-quality GIF (preserve original resolution)
       await ffmpeg.exec([
         '-i', inputName,
         '-i', 'palette.png',
-        '-lavfi', 'fps=10,scale=320:-1:flags=lanczos [x]; [x][1:v] paletteuse',
+        '-lavfi', 'fps=10 [x]; [x][1:v] paletteuse',
         '-y', 'output.gif',
       ]);
 
