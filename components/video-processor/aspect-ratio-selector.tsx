@@ -39,7 +39,7 @@ export function AspectRatioSelector({ value, onChange, className = '' }: AspectR
         Aspect Ratio
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {aspectRatios.map((ar) => {
           const maxDim = 20;
           const scale = maxDim / Math.max(ar.visual.w, ar.visual.h);

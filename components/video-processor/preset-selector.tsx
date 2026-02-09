@@ -137,7 +137,7 @@ export function PresetFormatSelector({
           </span>
           Presets
         </h3>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="flex flex-col gap-1.5 md:grid md:grid-cols-4">
           {presets.map((preset) => (
             <button
               key={preset.id}
@@ -153,9 +153,9 @@ export function PresetFormatSelector({
             >
               <div className="flex items-center gap-1.5">
                 <span className="flex-shrink-0 [&_svg]:w-3 [&_svg]:h-3">{preset.icon}</span>
-                <div className="min-w-0">
-                  <p className="font-bold text-[11px] leading-tight truncate">{preset.name}</p>
-                  <p className="text-[9px] text-muted-foreground leading-tight truncate">{preset.description}</p>
+                <div className="min-w-0 flex items-center gap-2 md:block">
+                  <p className="font-bold text-[11px] leading-tight">{preset.name}</p>
+                  <p className="text-[9px] text-muted-foreground leading-tight">{preset.description}</p>
                 </div>
               </div>
             </button>
